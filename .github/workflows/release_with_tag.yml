@@ -46,7 +46,7 @@ jobs:
       - name: 📦️⏫ Upload Artifact - SampleZigTunneler
         uses: actions/upload-artifact@v4
         with:
-          name: artifact-windows-exe
+          name: artifact-windows-x64
           path: |
             Sample.Zig.Tunneler/SampleZigTunneler/zig-out/bin/SampleZigTunneler.exe
             Sample.Zig.Tunneler/SampleZigTunneler/zig-out/bin/SDL3.dll
@@ -80,6 +80,12 @@ jobs:
         with:
           path: download-artifacts
 
+      - name: 📦 Zip Artifacts
+        run: |
+          cd download-artifacts
+          
+          zip -r artifact-windows-x64.zip           ./
+
       - name: Log artifact download
         run: |
           ls -alh
@@ -110,5 +116,4 @@ jobs:
           body: ${{ steps.changelog_reader.outputs.changes }}
           fail_on_unmatched_files: true
           files: |
-            ./download-artifacts/SampleZigTunneler.exe
-            ./download-artifacts/SDL3.dll
+            ./download-artifacts/artifact-windows-x64.zip
