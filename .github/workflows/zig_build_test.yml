@@ -1,13 +1,11 @@
 name: zig build test
 
-on:
-  push:
-#    tags:
-#      - '*'
-    branches:
-      - main
-    paths:
-      - 'Sample.Zig.Tunneler/**'
+#on:
+#  push:
+#    branches:
+#      - main
+#    paths:
+#      - 'Sample.Zig.Tunneler/**'
 
 jobs:
   upload_assets_for_windows:

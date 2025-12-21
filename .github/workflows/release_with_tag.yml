@@ -1,0 +1,115 @@
+name: 🚀🏷️ Release with Tag
+
+on:
+  push:
+#    tags:
+#      - '*'
+    branches:
+      - main
+
+jobs:
+  upload_assets_for_windows:
+    name: 🪟📦️ Upload Assets
+    runs-on: windows-latest
+    steps:
+      # https://github.com/actions/checkout
+      - name: checkout
+        uses: actions/checkout@v5
+
+      # https://codeberg.org/mlugg/setup-zig/
+      - name: setup zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
+
+      # https://github.com/actions/cache
+      - name: Cache Zig build
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/zig
+          key: zig-${{ runner.os }}-${{ hashFiles('**/*.zig') }}
+          restore-keys: |
+            zig-${{ runner.os }}-
+
+      - name: install deps
+        shell: pwsh
+        run: |
+          .\install_deps_windows.ps1
+      - name: build
+        shell: pwsh
+        run: |
+          Push-Location Sample.Zig.Tunneler/SampleZigTunneler
+          zig build -Doptimize=ReleaseSmall
+          Pop-Location # Sample.Zig.Tunneler/SampleZigTunneler
+
+
+      - name: 📦️⏫ Upload Artifact - SampleZigTunneler
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact-windows-exe
+          path: |
+            Sample.Zig.Tunneler/SampleZigTunneler/zig-out/bin/SampleZigTunneler.exe
+            Sample.Zig.Tunneler/SampleZigTunneler/zig-out/bin/SDL3.dll
+
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+
+  ## ======================================================================================================
+  release:
+    if: false
+    needs: [upload_assets_for_windows]
+    name: 🚀 Release
+    runs-on: ubuntu-latest
+    steps:
+      # https://github.com/actions/checkout
+      - name: checkout
+        uses: actions/checkout@v5
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            CHANGELOG.md
+
+      - name: Make Directory For Download Artifacts
+        run: |
+          mkdir -p download-artifacts
+
+      # https://github.com/actions/download-artifact
+      - name: 📦️⏬ Download Artifact
+        uses: actions/download-artifact@v5
+        with:
+          path: download-artifacts
+
+      - name: Log artifact download
+        run: |
+          ls -alh
+          ls -alh download-artifacts
+
+      - name: Get Tagname
+        id: tag_name
+        run: |
+          echo "current_version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      # https://github.com/mindsers/changelog-reader-action
+      - name: Changelog Reader
+        id: changelog_reader
+        uses: mindsers/changelog-reader-action@v2
+        with:
+          version: ${{ steps.tag_name.outputs.current_version }}
+          path: ./CHANGELOG.md
+
+      # https://github.com/softprops/action-gh-release
+      - name: 🚀 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          prerelease: false
+          name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          body: ${{ steps.changelog_reader.outputs.changes }}
+          fail_on_unmatched_files: true
+          files: |
+            ./download-artifacts/SampleZigTunneler.exe
+            ./download-artifacts/SDL3.dll
