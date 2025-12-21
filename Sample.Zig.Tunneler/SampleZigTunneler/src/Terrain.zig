@@ -1,7 +1,6 @@
 const std = @import("std");
-const sdl = @import("sdl.zig").sdl;
 const game = @import("Game.zig");
-const Tunneler = @import("Tunneler.zig");
+const Tunneler = @import("Tunneler.zig"); // TODO(pyoung): remove dependency
 const assert = std.debug.assert;
 
 // TODO(pyoung): use zig rand

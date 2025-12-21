@@ -182,21 +182,7 @@ pub fn Do() void {
             }
 
             if (E_MENU_SETTING.FULL_SCREEN.Is() or E_MENU_SETTING.MODE.Is()) {
-                // TODO(pyoung): maybe. replace surface  to renderer
-                const display_id = sdl.SDL_GetDisplayForWindow(Graphics.window);
-                const mode = sdl.SDL_GetCurrentDisplayMode(display_id).*;
-
-                if (Graphics.isVideo_fullscreen) {
-                    _ = sdl.SDL_SetWindowBordered(Graphics.window, false);
-                    _ = sdl.SDL_SetWindowPosition(Graphics.window, 0, 0);
-                    _ = sdl.SDL_SetWindowSize(Graphics.window, mode.w, mode.h);
-                } else {
-                    _ = sdl.SDL_SetWindowBordered(Graphics.window, true);
-                    _ = sdl.SDL_SetWindowPosition(Graphics.window, @divTrunc(mode.w - Graphics.Video_X, 2), @divTrunc(mode.h - Graphics.Video_Y, 2));
-                    _ = sdl.SDL_SetWindowSize(Graphics.window, Graphics.Video_X, Graphics.Video_Y);
-                }
-                Graphics.Resize(Graphics.Video_X, Graphics.Video_Y);
-                Graphics.Refresh();
+                Graphics.UpdateMode();
             }
 
             Key.is_key_menu_enter = false;

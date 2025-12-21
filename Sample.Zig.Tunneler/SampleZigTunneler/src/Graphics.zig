@@ -8,7 +8,7 @@ const assert = std.debug.assert;
 
 pub const RES_X: i32 = 160;
 pub const RES_Y: i32 = 120;
-const font8x8 = blk: {
+const _font8x8 = blk: {
     @setEvalBranchQuota(20000);
     var result: [8][8][256]bool = undefined;
 
@@ -24,11 +24,11 @@ const font8x8 = blk: {
     break :blk result;
 };
 
-pub var window: *sdl.SDL_Window = undefined;
+var _window: *sdl.SDL_Window = undefined;
 var _surface_window: *sdl.SDL_Surface = undefined;
+var logical_surfaceOrNull: ?*sdl.SDL_Surface = null;
 
 pub var surface: *sdl.SDL_Surface = undefined;
-pub var logical_surfaceOrNull: ?*sdl.SDL_Surface = null;
 pub var color: [256]u32 = undefined;
 
 pub const fs_modes = [5]sdl.SDL_Rect{
@@ -54,20 +54,20 @@ pub fn Deinit_Video() void {
     if (logical_surfaceOrNull) |logical_surface| {
         sdl.SDL_DestroySurface(logical_surface);
     }
-    sdl.SDL_DestroyWindow(window);
+    sdl.SDL_DestroyWindow(_window);
     sdl.SDL_Quit();
 }
 
 pub fn Resize(w: i32, h: i32) void {
     if (logical_surfaceOrNull != null) {
         _ = sdl.SDL_FillSurfaceRect(_surface_window, null, color[0]);
-        _ = sdl.SDL_UpdateWindowSurface(window);
+        _ = sdl.SDL_UpdateWindowSurface(_window);
         sdl.SDL_DestroySurface(logical_surfaceOrNull.?);
     }
 
     logical_surfaceOrNull = sdl.SDL_CreateSurface(w, h, sdl.SDL_PIXELFORMAT_RGBA32);
     surface = logical_surfaceOrNull.?;
-    _surface_window = sdl.SDL_GetWindowSurface(window);
+    _surface_window = sdl.SDL_GetWindowSurface(_window);
 }
 
 pub fn Refresh() void {
@@ -81,7 +81,7 @@ pub fn Refresh() void {
         .h = Video_Y,
     };
     _ = sdl.SDL_BlitSurfaceScaled(surface, null, _surface_window, &rect, sdl.SDL_SCALEMODE_LINEAR);
-    _ = sdl.SDL_UpdateWindowSurface(window);
+    _ = sdl.SDL_UpdateWindowSurface(_window);
 }
 
 pub fn Init_Video() bool {
@@ -98,7 +98,7 @@ pub fn Init_Video() bool {
         return false;
     }
 
-    window = windowOrNull.?;
+    _window = windowOrNull.?;
     Resize(Video_X, Video_Y);
 
     // _ = sdl.SDL_WarpMouseGlobal(0, 0);
@@ -182,14 +182,7 @@ pub fn PutPhysPixel(x: usize, y: usize, coloru: u32) void {
 }
 
 pub fn PutPixel(x: i32, y: i32, coloru: u32) void {
-    var rect: sdl.SDL_Rect = undefined;
-
-    rect.x = @divTrunc(Video_X * x, RES_X);
-    rect.y = @divTrunc(Video_Y * y, RES_Y);
-    rect.w = @divTrunc(Video_X * (x + 1), RES_X) - @divTrunc(Video_X * x, RES_X);
-    rect.h = @divTrunc(Video_Y * (y + 1), RES_Y) - @divTrunc(Video_Y * y, RES_Y);
-
-    _ = sdl.SDL_FillSurfaceRect(surface, &rect, coloru);
+    DrawBox(x, y, 1, 1, coloru);
 }
 
 pub fn PutStr(x: usize, y: usize, str: []const u8, coloru: u32) void {
@@ -202,20 +195,41 @@ pub fn PutStr(x: usize, y: usize, str: []const u8, coloru: u32) void {
 }
 
 pub fn DrawBox(x: i32, y: i32, w: i32, h: i32, coloru: u32) void {
-    var rect: sdl.SDL_Rect = undefined;
-
-    rect.x = @divTrunc(Video_X * x, RES_X);
-    rect.y = @divTrunc(Video_Y * y, RES_Y);
-    rect.w = @divTrunc(Video_X * (x + w), RES_X) - @divTrunc(Video_X * x, RES_X);
-    rect.h = @divTrunc(Video_Y * (y + h), RES_Y) - @divTrunc(Video_Y * y, RES_Y);
-
+    const rect: sdl.SDL_Rect = .{
+        .x = @divTrunc(Video_X * x, RES_X),
+        .y = @divTrunc(Video_Y * y, RES_Y),
+        .w = @divTrunc(Video_X * (x + w), RES_X) - @divTrunc(Video_X * x, RES_X),
+        .h = @divTrunc(Video_Y * (y + h), RES_Y) - @divTrunc(Video_Y * y, RES_Y),
+    };
     _ = sdl.SDL_FillSurfaceRect(surface, &rect, coloru);
 }
+
+pub fn UpdateMode() void {
+    // TODO(pyoung): maybe. replace surface  to renderer
+
+    const display_id = sdl.SDL_GetDisplayForWindow(_window);
+    const mode = sdl.SDL_GetCurrentDisplayMode(display_id).*;
+
+    if (isVideo_fullscreen) {
+        _ = sdl.SDL_SetWindowBordered(_window, false);
+        _ = sdl.SDL_SetWindowPosition(_window, 0, 0);
+        _ = sdl.SDL_SetWindowSize(_window, mode.w, mode.h);
+    } else {
+        _ = sdl.SDL_SetWindowBordered(_window, true);
+        _ = sdl.SDL_SetWindowPosition(_window, @divTrunc(mode.w - Video_X, 2), @divTrunc(mode.h - Video_Y, 2));
+        _ = sdl.SDL_SetWindowSize(_window, Video_X, Video_Y);
+    }
+    Resize(Video_X, Video_Y);
+    Refresh();
+}
+// =============================================================================================================================
+// private
+// =============================================================================================================================
 
 fn PutChar(x: usize, y: usize, ch: u8, coloru: u32) void {
     for (0..8) |i| {
         for (0..8) |j| {
-            if (font8x8[j][i][ch]) {
+            if (_font8x8[j][i][ch]) {
                 PutPixel(@intCast(x + j), @intCast(y + i), coloru);
             }
         }

@@ -11,6 +11,8 @@ pub const player_keys_t = struct {
     fire: u32,
 };
 
+// TODO(pyoung): bool player_keys_t - for key_pl
+
 pub const E_DIR = enum(usize) {
     RIGHT = 0,
     DOWN_RIGHT = 1,

@@ -16,6 +16,8 @@ const Time_Now = Timer.Time_Now;
 const Handle_AI = Ai.Handle_AI;
 const E_DIR = Types.E_DIR;
 
+// TODO(pyoung): split game and render logic
+
 // TODO(pyoung): use zig rand
 const RAND_MAX = 0x7fff;
 extern fn rand() i32;
@@ -45,7 +47,6 @@ pub var Tank: [2]Types.TANK = undefined;
 
 const tank_spr = game.TANK_SPRITE;
 
-
 pub fn Init_Tanks() void {
     for (0..2) |j| {
         Tank[j].rot = E_DIR.UP;
@@ -66,7 +67,6 @@ pub fn Init_Tanks() void {
         expl.lifetime = 0.0;
     }
 }
-
 
 pub fn DrawFrames() void {
     _ = sdl.SDL_FillSurfaceRect(Graphics.surface, null, Graphics.color[2]);
@@ -1039,7 +1039,7 @@ pub fn HandleActions(dt: f64) void {
             Tank[i].y <= @as(f64, @floatFromInt(Tank[jj].basey + game.BASE_SIZEY)) and
             Tank[i].y >= @as(f64, @floatFromInt(Tank[jj].basey - game.BASE_SIZEY)))
         {
-            Tank[i].Energy += game.REPAIR_SPEED2 * dt;
+            Tank[i].Energy += game.REPAIR_SPEED_ENERGY * dt;
 
             if (Tank[i].Energy > 1.0)
                 Tank[i].Energy = 1.0;
