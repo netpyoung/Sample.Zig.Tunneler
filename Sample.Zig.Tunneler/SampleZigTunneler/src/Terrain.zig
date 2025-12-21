@@ -16,101 +16,6 @@ const Wall = struct {
     next: ?*Wall,
 };
 
-fn Init_Base(y: i32, x: i32, n: usize) void {
-    Tunneler.Tank[n].basex = x;
-    Tunneler.Tank[n].basey = y;
-
-    var i: i32 = undefined;
-    var j: i32 = undefined;
-
-    i = -game.BASE_SIZEX;
-    while (i < game.BASE_SIZEX) : (i += 1) {
-        j = -game.BASE_SIZEY;
-        while (j < game.BASE_SIZEY) : (j += 1) {
-            field[@intCast(j + y)][@intCast(i + x)] = 0;
-        }
-    }
-
-    i = -game.BASE_SIZEY;
-    while (i < game.BASE_SIZEY) : (i += 1) {
-        field[@intCast(i + y)][@intCast(-game.BASE_SIZEX + x)] = @intCast(30 + 10 * n);
-        field[@intCast(i + y)][@intCast(game.BASE_SIZEX - 1 + x)] = @intCast(30 + 10 * n);
-    }
-
-    j = -game.BASE_SIZEX;
-    while (i < -game.BASE_DOORSIZE + 1) : (j += 1) {
-        field[@intCast(-game.BASE_SIZEY + y)][@intCast(j + x)] = @intCast(30 + 10 * n);
-        field[@intCast(game.BASE_SIZEY - 1 + y)][@intCast(j + x)] = @intCast(30 + 10 * n);
-    }
-    j = game.BASE_DOORSIZE;
-    while (i < game.BASE_SIZEX) : (j += 1) {
-        field[@intCast(-game.BASE_SIZEY + y)][@intCast(j + x)] = @intCast(30 + 10 * n);
-        field[@intCast(game.BASE_SIZEY - 1 + y)][@intCast(j + x)] = @intCast(30 + 10 * n);
-    }
-}
-
-fn Generate_Wall(allocator: std.mem.Allocator) *Wall {
-    var x: i32 = undefined;
-    var skip: i32 = undefined;
-    var range: i32 = undefined;
-    var start: *Wall = undefined;
-    var p: *Wall = undefined;
-    var newp: *Wall = undefined;
-
-    skip = 64;
-    range = 40;
-
-    start = allocator.create(Wall) catch unreachable;
-    start.x = 0;
-    start.y = 0;
-    start.next = allocator.create(Wall) catch unreachable;
-    p = start.next.?;
-    p.x = skip;
-    p.y = 0;
-    p.next = null;
-
-    while (skip > 1) {
-        x = @divTrunc(skip, 2);
-        p = start;
-
-        while (true) {
-            while (p.next != null and p.next.?.x < x) {
-                p = p.next.?;
-            }
-
-            if (p.next == null) {
-                break;
-            }
-
-            newp = allocator.create(Wall) catch unreachable;
-            newp.x = x;
-            newp.y = @divTrunc(p.y + p.next.?.y, 2) -
-                range +
-                @as(i32, @intFromFloat(2.0 *
-                    @as(f64, @floatFromInt(range)) * @as(f64, @floatFromInt(rand())) /
-                    (@as(f64, @floatFromInt(RAND_MAX)) + 1.0)));
-            newp.next = p.next;
-            p.next = newp;
-            p = newp.next.?;
-
-            x += skip;
-        }
-
-        skip = @divTrunc(skip, 2);
-        range = @divTrunc(range, 2);
-    }
-
-    return (start);
-}
-
-fn Free_Wall(allocator: std.mem.Allocator, wall: ?*Wall) void {
-    if (wall.?.next != null) {
-        Free_Wall(allocator, wall.?.next);
-    }
-
-    allocator.destroy(wall.?);
-}
-
 pub fn Init_Field() void {
     var i: i32 = undefined;
     var j: i32 = undefined;
@@ -245,4 +150,103 @@ pub fn Init_Field() void {
     }
 
     Init_Base(ii2, jj2, 1);
+}
+
+// =============================================================================================================================
+// private
+// =============================================================================================================================
+
+fn Init_Base(y: i32, x: i32, n: usize) void {
+    Tunneler.Tank[n].basex = x;
+    Tunneler.Tank[n].basey = y;
+
+    var i: i32 = undefined;
+    var j: i32 = undefined;
+
+    i = -game.BASE_SIZEX;
+    while (i < game.BASE_SIZEX) : (i += 1) {
+        j = -game.BASE_SIZEY;
+        while (j < game.BASE_SIZEY) : (j += 1) {
+            field[@intCast(j + y)][@intCast(i + x)] = 0;
+        }
+    }
+
+    i = -game.BASE_SIZEY;
+    while (i < game.BASE_SIZEY) : (i += 1) {
+        field[@intCast(i + y)][@intCast(-game.BASE_SIZEX + x)] = @intCast(30 + 10 * n);
+        field[@intCast(i + y)][@intCast(game.BASE_SIZEX - 1 + x)] = @intCast(30 + 10 * n);
+    }
+
+    j = -game.BASE_SIZEX;
+    while (i < -game.BASE_DOORSIZE + 1) : (j += 1) {
+        field[@intCast(-game.BASE_SIZEY + y)][@intCast(j + x)] = @intCast(30 + 10 * n);
+        field[@intCast(game.BASE_SIZEY - 1 + y)][@intCast(j + x)] = @intCast(30 + 10 * n);
+    }
+    j = game.BASE_DOORSIZE;
+    while (i < game.BASE_SIZEX) : (j += 1) {
+        field[@intCast(-game.BASE_SIZEY + y)][@intCast(j + x)] = @intCast(30 + 10 * n);
+        field[@intCast(game.BASE_SIZEY - 1 + y)][@intCast(j + x)] = @intCast(30 + 10 * n);
+    }
+}
+
+fn Generate_Wall(allocator: std.mem.Allocator) *Wall {
+    var x: i32 = undefined;
+    var skip: i32 = undefined;
+    var range: i32 = undefined;
+    var start: *Wall = undefined;
+    var p: *Wall = undefined;
+    var newp: *Wall = undefined;
+
+    skip = 64;
+    range = 40;
+
+    start = allocator.create(Wall) catch unreachable;
+    start.x = 0;
+    start.y = 0;
+    start.next = allocator.create(Wall) catch unreachable;
+    p = start.next.?;
+    p.x = skip;
+    p.y = 0;
+    p.next = null;
+
+    while (skip > 1) {
+        x = @divTrunc(skip, 2);
+        p = start;
+
+        while (true) {
+            while (p.next != null and p.next.?.x < x) {
+                p = p.next.?;
+            }
+
+            if (p.next == null) {
+                break;
+            }
+
+            newp = allocator.create(Wall) catch unreachable;
+            newp.x = x;
+            newp.y = @divTrunc(p.y + p.next.?.y, 2) -
+                range +
+                @as(i32, @intFromFloat(2.0 *
+                    @as(f64, @floatFromInt(range)) * @as(f64, @floatFromInt(rand())) /
+                    (@as(f64, @floatFromInt(RAND_MAX)) + 1.0)));
+            newp.next = p.next;
+            p.next = newp;
+            p = newp.next.?;
+
+            x += skip;
+        }
+
+        skip = @divTrunc(skip, 2);
+        range = @divTrunc(range, 2);
+    }
+
+    return (start);
+}
+
+fn Free_Wall(allocator: std.mem.Allocator, wall: ?*Wall) void {
+    if (wall.?.next != null) {
+        Free_Wall(allocator, wall.?.next);
+    }
+
+    allocator.destroy(wall.?);
 }

@@ -38,44 +38,6 @@ pub fn Init_AI() void {
     evade[1] = 0;
 }
 
-fn PathClear(x: i32, y: i32, dx: f64, dy: f64) bool {
-    var x0: usize = undefined;
-    var y0: usize = undefined;
-    var k: usize = undefined;
-    var r: f64 = undefined;
-
-    r = 0.0;
-    while (r < 100.0) {
-        x0 = @intCast(Round(@as(f64, @floatFromInt(x)) + r * dx));
-        y0 = @intCast(Round(@as(f64, @floatFromInt(y)) + r * dy));
-
-        k = 0;
-        if (Terrain.field[y0][x0] > k) {
-            k = Terrain.field[y0][x0];
-        }
-        if (Terrain.field[y0 + 1][x0 + 1] > k) {
-            k = Terrain.field[y0 + 1][x0 + 1];
-        }
-        if (Terrain.field[y0 - 1][x0 + 1] > k) {
-            k = Terrain.field[y0 - 1][x0 + 1];
-        }
-        if (Terrain.field[y0 - 1][x0 - 1] > k) {
-            k = Terrain.field[y0 - 1][x0 - 1];
-        }
-        if (Terrain.field[y0 + 1][x0 - 1] > k) {
-            k = Terrain.field[y0 + 1][x0 - 1];
-        }
-
-        if (k >= 10) {
-            return false;
-        }
-
-        r += 1.0;
-    }
-
-    return true;
-}
-
 ///*  Handle AI
 // *
 // *  Function should set tanks rot, move and fire
@@ -176,4 +138,46 @@ pub fn Handle_AI(i: usize) void {
     if (sqrt(dx * dx + dy * dy) < 100) {
         Tunneler.Tank[i].isFire = true;
     }
+}
+
+// =============================================================================================================================
+// private
+// =============================================================================================================================
+
+fn PathClear(x: i32, y: i32, dx: f64, dy: f64) bool {
+    var x0: usize = undefined;
+    var y0: usize = undefined;
+    var k: usize = undefined;
+    var r: f64 = undefined;
+
+    r = 0.0;
+    while (r < 100.0) {
+        x0 = @intCast(Round(@as(f64, @floatFromInt(x)) + r * dx));
+        y0 = @intCast(Round(@as(f64, @floatFromInt(y)) + r * dy));
+
+        k = 0;
+        if (Terrain.field[y0][x0] > k) {
+            k = Terrain.field[y0][x0];
+        }
+        if (Terrain.field[y0 + 1][x0 + 1] > k) {
+            k = Terrain.field[y0 + 1][x0 + 1];
+        }
+        if (Terrain.field[y0 - 1][x0 + 1] > k) {
+            k = Terrain.field[y0 - 1][x0 + 1];
+        }
+        if (Terrain.field[y0 - 1][x0 - 1] > k) {
+            k = Terrain.field[y0 - 1][x0 - 1];
+        }
+        if (Terrain.field[y0 + 1][x0 - 1] > k) {
+            k = Terrain.field[y0 + 1][x0 - 1];
+        }
+
+        if (k >= 10) {
+            return false;
+        }
+
+        r += 1.0;
+    }
+
+    return true;
 }

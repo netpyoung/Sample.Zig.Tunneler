@@ -45,6 +45,171 @@ pub var Tank: [2]Types.TANK = undefined;
 
 const tank_spr = game.TANK_SPRITE;
 
+
+pub fn Init_Tanks() void {
+    for (0..2) |j| {
+        Tank[j].rot = E_DIR.UP;
+        Tank[j].isTunneling = true;
+        Tank[j].x = @floatFromInt(Tank[j].basex);
+        Tank[j].y = @floatFromInt(Tank[j].basey);
+        Tank[j].Energy = 1.0;
+        Tank[j].Shields = 1.0;
+        Tank[j].deathc = 0.0;
+        Tank[j].deaths = 0;
+
+        for (0..128) |i| {
+            Ammo[j][i].isExists = false;
+        }
+    }
+
+    for (&Expl) |*expl| {
+        expl.lifetime = 0.0;
+    }
+}
+
+
+pub fn DrawFrames() void {
+    _ = sdl.SDL_FillSurfaceRect(Graphics.surface, null, Graphics.color[2]);
+
+    DrawBox(2, 2, 76, 90, Graphics.color[0]);
+    DrawBox(82, 2, 76, 90, Graphics.color[0]);
+
+    DrawStatusBox(6, 94);
+    DrawStatusBox(86, 94);
+}
+
+pub fn Draw() void {
+    var x: i32 = undefined;
+    var y: i32 = undefined;
+    var rect: sdl.SDL_Rect = undefined;
+
+    //* Draw status */
+    Graphics.DrawBox(19, 98, 49, 5, Graphics.color[0]);
+    Graphics.DrawBox(19, 109, 49, 5, Graphics.color[0]);
+    Graphics.DrawBox(99, 98, 49, 5, Graphics.color[0]);
+    Graphics.DrawBox(99, 109, 49, 5, Graphics.color[0]);
+
+    Graphics.DrawBox(19, 98, @intFromFloat(49.0 * Tank[1].Energy), 5, Graphics.color[6]);
+    if (Tank[1].Shields > 0.0) {
+        Graphics.DrawBox(19, 109, @intFromFloat(49.0 * Tank[1].Shields), 5, Graphics.color[7]);
+    }
+
+    Graphics.DrawBox(99, 98, @intFromFloat(49.0 * Tank[0].Energy), 5, Graphics.color[6]);
+    if (Tank[0].Shields > 0.0) {
+        Graphics.DrawBox(99, 109, @intFromFloat(49.0 * Tank[0].Shields), 5, Graphics.color[7]);
+    }
+
+    //* Draw field or noise */
+    if (Tank[0].Energy >= 0.25 or NoiseProb(Tank[0].Energy)) {
+        x = Round(Tank[0].x);
+        y = Round(Tank[0].y);
+        for (0..90) |jj| {
+            for (0..76) |ii| {
+                PutPixel(@intCast(82 + ii), @intCast(2 + jj), Graphics.color[Terrain.field[@as(usize, @intCast(y)) + jj - 45][@as(usize, @intCast(x)) + ii - 38]]);
+            }
+        }
+    } else {
+        noise0 = 2;
+    }
+
+    if (Tank[1].Energy >= 0.25 or NoiseProb(Tank[1].Energy)) {
+        x = Round(Tank[1].x);
+        y = Round(Tank[1].y);
+        for (0..90) |jj| {
+            for (0..76) |ii| {
+                PutPixel(@intCast(2 + ii), @intCast(2 + jj), Graphics.color[Terrain.field[@as(usize, @intCast(y)) + jj - 45][@as(usize, @intCast(x)) + ii - 38]]);
+            }
+        }
+    } else {
+        noise1 = 2;
+    }
+
+    //* Draw Tanks */
+    if (Tank[0].deathc <= 0.0) {
+        DrawTank(120, 47, Tank[0].rot, 0);
+
+        rect.x = @divTrunc(Graphics.Video_X * 2, Graphics.RES_X);
+        rect.y = @divTrunc(Graphics.Video_Y * 2, Graphics.RES_Y);
+        rect.w = @divTrunc(Graphics.Video_X * (2 + 76), Graphics.RES_X) - @divTrunc(Graphics.Video_X * 2, Graphics.RES_X);
+        rect.h = @divTrunc(Graphics.Video_Y * (2 + 90), Graphics.RES_Y) - @divTrunc(Graphics.Video_Y * 2, Graphics.RES_Y);
+
+        _ = sdl.SDL_SetSurfaceClipRect(Graphics.surface, &rect);
+        DrawTank(Round(Tank[0].x) - Round(Tank[1].x) + 40, Round(Tank[0].y) - Round(Tank[1].y) + 47, Tank[0].rot, 0);
+        _ = sdl.SDL_SetSurfaceClipRect(Graphics.surface, null);
+    }
+    if (Tank[1].deathc <= 0.0) {
+        DrawTank(40, 47, Tank[1].rot, 1);
+
+        rect.x = @divTrunc(Graphics.Video_X * 82, Graphics.RES_X);
+        rect.y = @divTrunc(Graphics.Video_Y * 2, Graphics.RES_Y);
+        rect.w = @divTrunc(Graphics.Video_X * (82 + 76), Graphics.RES_X) - @divTrunc(Graphics.Video_X * 82, Graphics.RES_X);
+        rect.h = @divTrunc(Graphics.Video_Y * (2 + 90), Graphics.RES_Y) - @divTrunc(Graphics.Video_Y * 2, Graphics.RES_Y);
+
+        _ = sdl.SDL_SetSurfaceClipRect(Graphics.surface, &rect);
+        DrawTank(Round(Tank[1].x) - Round(Tank[0].x) + 120, Round(Tank[1].y) - Round(Tank[0].y) + 47, Tank[1].rot, 1);
+        _ = sdl.SDL_SetSurfaceClipRect(Graphics.surface, null);
+    }
+
+    //* Draw Ammo */
+    for (0..2) |j| {
+        for (0..128) |i| {
+            //* Draw ammo on screen of tank 0 */
+            if (Ammo[j][i].isExists) {
+                x = Round(Ammo[j][i].x) - Round(Tank[0].x);
+                y = Round(Ammo[j][i].y) - Round(Tank[0].y);
+                if (x < 38 and x >= -38 and y < 45 and y >= -45)
+                    PutPixel(x + 120, y + 47, Graphics.color[12]);
+
+                x = Round(Ammo[j][i].x - rot_xtable[@intFromEnum(Ammo[j][i].rot)]) - Round(Tank[0].x);
+                y = Round(Ammo[j][i].y - rot_ytable[@intFromEnum(Ammo[j][i].rot)]) - Round(Tank[0].y);
+                if (x < 38 and x >= -38 and y < 45 and y >= -45)
+                    PutPixel(x + 120, y + 47, Graphics.color[13]);
+            }
+
+            //* Draw ammo on screen of tank 1 */
+            if (Ammo[j][i].isExists) {
+                x = Round(Ammo[j][i].x) - Round(Tank[1].x);
+                y = Round(Ammo[j][i].y) - Round(Tank[1].y);
+                if (x < 38 and x >= -38 and y < 45 and y >= -45)
+                    PutPixel(x + 40, y + 47, Graphics.color[12]);
+
+                x = Round(Ammo[j][i].x - rot_xtable[@intFromEnum(Ammo[j][i].rot)]) - Round(Tank[1].x);
+                y = Round(Ammo[j][i].y - rot_ytable[@intFromEnum(Ammo[j][i].rot)]) - Round(Tank[1].y);
+                if (x < 38 and x >= -38 and y < 45 and y >= -45)
+                    PutPixel(x + 40, y + 47, Graphics.color[13]);
+            }
+
+            //* Draw explosion on screen of tank j */
+            if (Expl[i].lifetime > 0.0 and
+                Round(Expl[i].x) - Round(Tank[j].x) < 38 and
+                Round(Expl[i].x) - Round(Tank[j].x) >= -38 and
+                Round(Expl[i].y) - Round(Tank[j].y) < 45 and
+                Round(Expl[i].y) - Round(Tank[j].y) >= -45)
+            {
+                PutPixel(
+                    Round(Expl[i].x) - Round(Tank[j].x) + @as(i32, @intCast(120 - 80 * j)),
+                    Round(Expl[i].y) - Round(Tank[j].y) + 47,
+                    Graphics.color[12],
+                );
+            }
+        }
+    }
+
+    //* Draw noise */
+    if (noise0 != 0) {
+        DrawNoise(82, 2, 76, 90);
+        noise0 -= 1;
+    }
+    if (noise1 != 0) {
+        DrawNoise(2, 2, 76, 90);
+        noise1 -= 1;
+    }
+}
+
+// =============================================================================================================================
+// private
+// =============================================================================================================================
+
 fn Round(a: f64) i32 {
     if (a - floor(a) < 0.5) {
         return @intFromFloat(floor(a));
@@ -176,16 +341,6 @@ fn DrawStatusBox(x: i32, y: i32) void {
     DrawShadow(x + 11, y + 14, 53, 7);
 }
 
-pub fn DrawFrames() void {
-    _ = sdl.SDL_FillSurfaceRect(Graphics.surface, null, Graphics.color[2]);
-
-    DrawBox(2, 2, 76, 90, Graphics.color[0]);
-    DrawBox(82, 2, 76, 90, Graphics.color[0]);
-
-    DrawStatusBox(6, 94);
-    DrawStatusBox(86, 94);
-}
-
 fn DrawNoise(x: usize, y: usize, w: usize, h: usize) void {
     var n: i32 = 0;
     DrawBox(@intCast(x), @intCast(y), @intCast(w), @intCast(h), Graphics.color[0]);
@@ -215,134 +370,6 @@ fn NoiseProb(E: f64) bool {
         return @as(f64, @floatFromInt(rand())) / (@as(f64, @floatFromInt(RAND_MAX)) + 1.0) > 0.50;
     }
     return @as(f64, @floatFromInt(rand())) / (@as(f64, @floatFromInt(RAND_MAX)) + 1.0) > 1.0 / (80.0 * E);
-}
-
-pub fn Draw() void {
-    var x: i32 = undefined;
-    var y: i32 = undefined;
-    var rect: sdl.SDL_Rect = undefined;
-
-    //* Draw status */
-    Graphics.DrawBox(19, 98, 49, 5, Graphics.color[0]);
-    Graphics.DrawBox(19, 109, 49, 5, Graphics.color[0]);
-    Graphics.DrawBox(99, 98, 49, 5, Graphics.color[0]);
-    Graphics.DrawBox(99, 109, 49, 5, Graphics.color[0]);
-
-    Graphics.DrawBox(19, 98, @intFromFloat(49.0 * Tank[1].Energy), 5, Graphics.color[6]);
-    if (Tank[1].Shields > 0.0) {
-        Graphics.DrawBox(19, 109, @intFromFloat(49.0 * Tank[1].Shields), 5, Graphics.color[7]);
-    }
-
-    Graphics.DrawBox(99, 98, @intFromFloat(49.0 * Tank[0].Energy), 5, Graphics.color[6]);
-    if (Tank[0].Shields > 0.0) {
-        Graphics.DrawBox(99, 109, @intFromFloat(49.0 * Tank[0].Shields), 5, Graphics.color[7]);
-    }
-
-    //* Draw field or noise */
-    if (Tank[0].Energy >= 0.25 or NoiseProb(Tank[0].Energy)) {
-        x = Round(Tank[0].x);
-        y = Round(Tank[0].y);
-        for (0..90) |jj| {
-            for (0..76) |ii| {
-                PutPixel(@intCast(82 + ii), @intCast(2 + jj), Graphics.color[Terrain.field[@as(usize, @intCast(y)) + jj - 45][@as(usize, @intCast(x)) + ii - 38]]);
-            }
-        }
-    } else {
-        noise0 = 2;
-    }
-
-    if (Tank[1].Energy >= 0.25 or NoiseProb(Tank[1].Energy)) {
-        x = Round(Tank[1].x);
-        y = Round(Tank[1].y);
-        for (0..90) |jj| {
-            for (0..76) |ii| {
-                PutPixel(@intCast(2 + ii), @intCast(2 + jj), Graphics.color[Terrain.field[@as(usize, @intCast(y)) + jj - 45][@as(usize, @intCast(x)) + ii - 38]]);
-            }
-        }
-    } else {
-        noise1 = 2;
-    }
-
-    //* Draw Tanks */
-    if (Tank[0].deathc <= 0.0) {
-        DrawTank(120, 47, Tank[0].rot, 0);
-
-        rect.x = @divTrunc(Graphics.Video_X * 2, Graphics.RES_X);
-        rect.y = @divTrunc(Graphics.Video_Y * 2, Graphics.RES_Y);
-        rect.w = @divTrunc(Graphics.Video_X * (2 + 76), Graphics.RES_X) - @divTrunc(Graphics.Video_X * 2, Graphics.RES_X);
-        rect.h = @divTrunc(Graphics.Video_Y * (2 + 90), Graphics.RES_Y) - @divTrunc(Graphics.Video_Y * 2, Graphics.RES_Y);
-
-        _ = sdl.SDL_SetSurfaceClipRect(Graphics.surface, &rect);
-        DrawTank(Round(Tank[0].x) - Round(Tank[1].x) + 40, Round(Tank[0].y) - Round(Tank[1].y) + 47, Tank[0].rot, 0);
-        _ = sdl.SDL_SetSurfaceClipRect(Graphics.surface, null);
-    }
-    if (Tank[1].deathc <= 0.0) {
-        DrawTank(40, 47, Tank[1].rot, 1);
-
-        rect.x = @divTrunc(Graphics.Video_X * 82, Graphics.RES_X);
-        rect.y = @divTrunc(Graphics.Video_Y * 2, Graphics.RES_Y);
-        rect.w = @divTrunc(Graphics.Video_X * (82 + 76), Graphics.RES_X) - @divTrunc(Graphics.Video_X * 82, Graphics.RES_X);
-        rect.h = @divTrunc(Graphics.Video_Y * (2 + 90), Graphics.RES_Y) - @divTrunc(Graphics.Video_Y * 2, Graphics.RES_Y);
-
-        _ = sdl.SDL_SetSurfaceClipRect(Graphics.surface, &rect);
-        DrawTank(Round(Tank[1].x) - Round(Tank[0].x) + 120, Round(Tank[1].y) - Round(Tank[0].y) + 47, Tank[1].rot, 1);
-        _ = sdl.SDL_SetSurfaceClipRect(Graphics.surface, null);
-    }
-
-    //* Draw Ammo */
-    for (0..2) |j| {
-        for (0..128) |i| {
-            //* Draw ammo on screen of tank 0 */
-            if (Ammo[j][i].isExists) {
-                x = Round(Ammo[j][i].x) - Round(Tank[0].x);
-                y = Round(Ammo[j][i].y) - Round(Tank[0].y);
-                if (x < 38 and x >= -38 and y < 45 and y >= -45)
-                    PutPixel(x + 120, y + 47, Graphics.color[12]);
-
-                x = Round(Ammo[j][i].x - rot_xtable[@intFromEnum(Ammo[j][i].rot)]) - Round(Tank[0].x);
-                y = Round(Ammo[j][i].y - rot_ytable[@intFromEnum(Ammo[j][i].rot)]) - Round(Tank[0].y);
-                if (x < 38 and x >= -38 and y < 45 and y >= -45)
-                    PutPixel(x + 120, y + 47, Graphics.color[13]);
-            }
-
-            //* Draw ammo on screen of tank 1 */
-            if (Ammo[j][i].isExists) {
-                x = Round(Ammo[j][i].x) - Round(Tank[1].x);
-                y = Round(Ammo[j][i].y) - Round(Tank[1].y);
-                if (x < 38 and x >= -38 and y < 45 and y >= -45)
-                    PutPixel(x + 40, y + 47, Graphics.color[12]);
-
-                x = Round(Ammo[j][i].x - rot_xtable[@intFromEnum(Ammo[j][i].rot)]) - Round(Tank[1].x);
-                y = Round(Ammo[j][i].y - rot_ytable[@intFromEnum(Ammo[j][i].rot)]) - Round(Tank[1].y);
-                if (x < 38 and x >= -38 and y < 45 and y >= -45)
-                    PutPixel(x + 40, y + 47, Graphics.color[13]);
-            }
-
-            //* Draw explosion on screen of tank j */
-            if (Expl[i].lifetime > 0.0 and
-                Round(Expl[i].x) - Round(Tank[j].x) < 38 and
-                Round(Expl[i].x) - Round(Tank[j].x) >= -38 and
-                Round(Expl[i].y) - Round(Tank[j].y) < 45 and
-                Round(Expl[i].y) - Round(Tank[j].y) >= -45)
-            {
-                PutPixel(
-                    Round(Expl[i].x) - Round(Tank[j].x) + @as(i32, @intCast(120 - 80 * j)),
-                    Round(Expl[i].y) - Round(Tank[j].y) + 47,
-                    Graphics.color[12],
-                );
-            }
-        }
-    }
-
-    //* Draw noise */
-    if (noise0 != 0) {
-        DrawNoise(82, 2, 76, 90);
-        noise0 -= 1;
-    }
-    if (noise1 != 0) {
-        DrawNoise(2, 2, 76, 90);
-        noise1 -= 1;
-    }
 }
 
 fn Explosion(x: f64, y: f64, n: usize, t: i32) void {
@@ -1053,26 +1080,5 @@ pub fn HandleActions(dt: f64) void {
 
             Expl[i].lifetime -= dt;
         }
-    }
-}
-
-pub fn Init_Tanks() void {
-    for (0..2) |j| {
-        Tank[j].rot = E_DIR.UP;
-        Tank[j].isTunneling = true;
-        Tank[j].x = @floatFromInt(Tank[j].basex);
-        Tank[j].y = @floatFromInt(Tank[j].basey);
-        Tank[j].Energy = 1.0;
-        Tank[j].Shields = 1.0;
-        Tank[j].deathc = 0.0;
-        Tank[j].deaths = 0;
-
-        for (0..128) |i| {
-            Ammo[j][i].isExists = false;
-        }
-    }
-
-    for (&Expl) |*expl| {
-        expl.lifetime = 0.0;
     }
 }
