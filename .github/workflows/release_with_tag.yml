@@ -2,10 +2,10 @@ name: 🚀🏷️ Release with Tag
 
 on:
   push:
-#    tags:
-#      - '*'
-    branches:
-      - main
+    tags:
+      - '*'
+#    branches:
+#      - main
 
 jobs:
   upload_assets_for_windows:
@@ -58,7 +58,6 @@ jobs:
 
   ## ======================================================================================================
   release:
-    if: false
     needs: [upload_assets_for_windows]
     name: 🚀 Release
     runs-on: ubuntu-latest
