@@ -1,0 +1,5 @@
+.vs/
+.zig-cache/
+int/
+out/
+zig-out/

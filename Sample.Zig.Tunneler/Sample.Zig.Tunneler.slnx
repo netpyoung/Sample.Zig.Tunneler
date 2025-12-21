@@ -1,0 +1,13 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="ARM" />
+    <Platform Name="ARM64" />
+    <Platform Name="WASM32" />
+    <Platform Name="X64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="SampleZigTunneler/SampleZigTunneler.zigproj" Type="98e5f03a-0b5f-41b0-a3fa-df2b47b954c1" Id="43e3f1fd-8c9f-46f4-bdbc-1c5ad42168fc">
+    <Platform Solution="*|x86" Project="Win32" />
+  </Project>
+</Solution>

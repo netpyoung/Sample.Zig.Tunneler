@@ -1,0 +1,12 @@
+.{
+    .name = .SampleZigTunneler,
+    .fingerprint = 0x2839eff705d00931,
+    .version = "0.0.1",
+    .dependencies = .{
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}
