@@ -1,0 +1,41 @@
+name: zig build test
+
+on:
+  push:
+#    tags:
+#      - '*'
+    branches:
+      - main
+    paths:
+      - 'Sample.Zig.Tunneler/**'
+
+jobs:
+  upload_assets_for_windows:
+    name: 🪟📦️ Upload Assets
+    runs-on: windows-latest
+    steps:
+      # https://github.com/actions/checkout
+      - name: checkout
+        uses: actions/checkout@v5
+
+      # https://codeberg.org/mlugg/setup-zig/
+      - name: setup zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
+
+      # https://github.com/actions/cache
+      - name: Cache Zig build
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/zig
+          key: zig-${{ runner.os }}-${{ hashFiles('**/*.zig') }}
+          restore-keys: |
+            zig-${{ runner.os }}-
+
+      - name: test
+        shell: pwsh
+        run: |
+          Push-Location Sample.Zig.Tunneler/SampleZigTunneler
+          zig build test
+          Pop-Location # Sample.Zig.Tunneler/SampleZigTunneler
