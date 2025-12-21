@@ -990,8 +990,8 @@ pub fn HandleActions(dt: f64) void {
             Tank[i].y <= @as(f64, @floatFromInt(Tank[i].basey + game.BASE_SIZEY)) and
             Tank[i].y >= @as(f64, @floatFromInt(Tank[i].basey - game.BASE_SIZEY)))
         {
-            Tank[i].Shields += game.REPAIR_SPEED2 * dt;
-            Tank[i].Energy += game.REPAIR_SPEED1 * dt;
+            Tank[i].Shields += game.REPAIR_SPEED_SHIELD * dt;
+            Tank[i].Energy += game.REPAIR_SPEED_ENERGY * dt;
 
             if (Tank[i].Shields > 1.0)
                 Tank[i].Shields = 1.0;

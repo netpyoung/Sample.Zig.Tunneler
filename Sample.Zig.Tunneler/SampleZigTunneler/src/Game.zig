@@ -1,7 +1,5 @@
 pub const VERSION = "0.0.1";
 
-pub const CONF_FILE = "tunneler.ini";
-
 pub const FIELD_SIZEX = 800;
 pub const FIELD_SIZEY = 600;
 
@@ -15,8 +13,8 @@ pub const BASE_SIZEY = 19;
 pub const BASE_DOORSIZE = 5;
 
 pub const SHOT_DAMAGE = 0.1;
-pub const REPAIR_SPEED1 = 0.125;
-pub const REPAIR_SPEED2 = 0.0625;
+pub const REPAIR_SPEED_ENERGY = 0.125;
+pub const REPAIR_SPEED_SHIELD = 0.0625;
 pub const ENERGY_DROP = 0.003;
 pub const ENERGY_SHOT = 0.008;
 
