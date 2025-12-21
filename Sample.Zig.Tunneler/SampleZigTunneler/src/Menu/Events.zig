@@ -14,9 +14,6 @@ pub fn HandleEvents() bool {
             sdl.SDL_EVENT_KEY_UP => {
                 Key.HandleKeyEvent(&event.key);
             },
-            sdl.SDL_EVENT_WINDOW_RESIZED => {
-                Graphics.surface = sdl.SDL_GetWindowSurface(Graphics.screen);
-            },
             sdl.SDL_EVENT_QUIT => {
                 std.process.exit(0);
                 return false;

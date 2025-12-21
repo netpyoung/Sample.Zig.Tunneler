@@ -103,7 +103,7 @@ pub fn Do() void {
                 E_MENU_SETTING.TANK_1_UP => {
                     PrintKey(8 * 8, 8 * 8, Key.sym_pl[0].up, Graphics.color[0]);
                     Graphics.PutStr(8 * 8, 8 * 8, "key", Graphics.color[12]);
-                    _ = sdl.SDL_UpdateWindowSurface(Graphics.screen);
+                    Graphics.Refresh();
 
                     Key.sym_pl[0].up = GetKeyPress();
                 },
@@ -111,7 +111,7 @@ pub fn Do() void {
                     PrintKey(8 * 8, 9 * 8, Key.sym_pl[0].down, Graphics.color[0]);
                     Graphics.PutStr(8 * 8, 9 * 8, str, Graphics.color[0]);
                     Graphics.PutStr(8 * 8, 9 * 8, "key", Graphics.color[12]);
-                    _ = sdl.SDL_UpdateWindowSurface(Graphics.screen);
+                    Graphics.Refresh();
 
                     Key.sym_pl[0].down = GetKeyPress();
                 },
@@ -119,7 +119,7 @@ pub fn Do() void {
                     PrintKey(8 * 8, 10 * 8, Key.sym_pl[0].left, Graphics.color[0]);
                     Graphics.PutStr(8 * 8, 10 * 8, str, Graphics.color[0]);
                     Graphics.PutStr(8 * 8, 10 * 8, "key", Graphics.color[12]);
-                    _ = sdl.SDL_UpdateWindowSurface(Graphics.screen);
+                    Graphics.Refresh();
 
                     Key.sym_pl[0].left = GetKeyPress();
                 },
@@ -127,7 +127,7 @@ pub fn Do() void {
                     PrintKey(8 * 8, 11 * 8, Key.sym_pl[0].right, Graphics.color[0]);
                     Graphics.PutStr(8 * 8, 11 * 8, str, Graphics.color[0]);
                     Graphics.PutStr(8 * 8, 11 * 8, "key", Graphics.color[12]);
-                    _ = sdl.SDL_UpdateWindowSurface(Graphics.screen);
+                    Graphics.Refresh();
 
                     Key.sym_pl[0].right = GetKeyPress();
                 },
@@ -135,7 +135,7 @@ pub fn Do() void {
                     PrintKey(8 * 8, 12 * 8, Key.sym_pl[0].fire, Graphics.color[0]);
                     Graphics.PutStr(8 * 8, 12 * 8, str, Graphics.color[0]);
                     Graphics.PutStr(8 * 8, 12 * 8, "key", Graphics.color[12]);
-                    _ = sdl.SDL_UpdateWindowSurface(Graphics.screen);
+                    Graphics.Refresh();
 
                     Key.sym_pl[0].fire = GetKeyPress();
                 },
@@ -143,7 +143,7 @@ pub fn Do() void {
                     PrintKey(14 * 8, 8 * 8, Key.sym_pl[1].up, Graphics.color[0]);
                     Graphics.PutStr(14 * 8, 8 * 8, str, Graphics.color[0]);
                     Graphics.PutStr(14 * 8, 8 * 8, "key", Graphics.color[12]);
-                    _ = sdl.SDL_UpdateWindowSurface(Graphics.screen);
+                    Graphics.Refresh();
 
                     Key.sym_pl[1].up = GetKeyPress();
                 },
@@ -151,7 +151,7 @@ pub fn Do() void {
                     PrintKey(14 * 8, 9 * 8, Key.sym_pl[1].down, Graphics.color[0]);
                     Graphics.PutStr(14 * 8, 9 * 8, str, Graphics.color[0]);
                     Graphics.PutStr(14 * 8, 9 * 8, "key", Graphics.color[12]);
-                    _ = sdl.SDL_UpdateWindowSurface(Graphics.screen);
+                    Graphics.Refresh();
 
                     Key.sym_pl[1].down = GetKeyPress();
                 },
@@ -159,7 +159,7 @@ pub fn Do() void {
                     PrintKey(14 * 8, 10 * 8, Key.sym_pl[1].left, Graphics.color[0]);
                     Graphics.PutStr(14 * 8, 10 * 8, str, Graphics.color[0]);
                     Graphics.PutStr(14 * 8, 10 * 8, "key", Graphics.color[12]);
-                    _ = sdl.SDL_UpdateWindowSurface(Graphics.screen);
+                    Graphics.Refresh();
 
                     Key.sym_pl[1].left = GetKeyPress();
                 },
@@ -167,7 +167,7 @@ pub fn Do() void {
                     PrintKey(14 * 8, 11 * 8, Key.sym_pl[1].right, Graphics.color[0]);
                     Graphics.PutStr(14 * 8, 11 * 8, str, Graphics.color[0]);
                     Graphics.PutStr(14 * 8, 11 * 8, "key", Graphics.color[12]);
-                    _ = sdl.SDL_UpdateWindowSurface(Graphics.screen);
+                    Graphics.Refresh();
 
                     Key.sym_pl[1].right = GetKeyPress();
                 },
@@ -175,7 +175,7 @@ pub fn Do() void {
                     PrintKey(14 * 8, 12 * 8, Key.sym_pl[1].fire, Graphics.color[0]);
                     Graphics.PutStr(14 * 8, 12 * 8, str, Graphics.color[0]);
                     Graphics.PutStr(14 * 8, 12 * 8, "key", Graphics.color[12]);
-                    _ = sdl.SDL_UpdateWindowSurface(Graphics.screen);
+                    Graphics.Refresh();
 
                     Key.sym_pl[1].fire = GetKeyPress();
                 },
@@ -183,29 +183,26 @@ pub fn Do() void {
 
             if (E_MENU_SETTING.FULL_SCREEN.Is() or E_MENU_SETTING.MODE.Is()) {
                 // TODO(pyoung): maybe. replace surface  to renderer
-                // TODO(pyoung): add logical surface to support fullscreen
-
-                const display_id = sdl.SDL_GetDisplayForWindow(Graphics.screen);
+                const display_id = sdl.SDL_GetDisplayForWindow(Graphics.window);
                 const mode = sdl.SDL_GetCurrentDisplayMode(display_id).*;
 
                 if (Graphics.isVideo_fullscreen) {
-                    _ = sdl.SDL_SetWindowBordered(Graphics.screen, false);
-                    _ = sdl.SDL_SetWindowPosition(Graphics.screen, 0, 0);
-                    _ = sdl.SDL_SetWindowSize(Graphics.screen, mode.w, mode.h);
+                    _ = sdl.SDL_SetWindowBordered(Graphics.window, false);
+                    _ = sdl.SDL_SetWindowPosition(Graphics.window, 0, 0);
+                    _ = sdl.SDL_SetWindowSize(Graphics.window, mode.w, mode.h);
                 } else {
-                    _ = sdl.SDL_SetWindowBordered(Graphics.screen, true);
-                    _ = sdl.SDL_SetWindowPosition(Graphics.screen, @divTrunc(mode.w - Graphics.Video_X, 2), @divTrunc(mode.h - Graphics.Video_Y, 2));
-                    _ = sdl.SDL_SetWindowSize(Graphics.screen, Graphics.Video_X, Graphics.Video_Y);
+                    _ = sdl.SDL_SetWindowBordered(Graphics.window, true);
+                    _ = sdl.SDL_SetWindowPosition(Graphics.window, @divTrunc(mode.w - Graphics.Video_X, 2), @divTrunc(mode.h - Graphics.Video_Y, 2));
+                    _ = sdl.SDL_SetWindowSize(Graphics.window, Graphics.Video_X, Graphics.Video_Y);
                 }
-
-                Graphics.surface = sdl.SDL_GetWindowSurface(Graphics.screen);
-                _ = sdl.SDL_UpdateWindowSurface(Graphics.screen);
+                Graphics.Resize(Graphics.Video_X, Graphics.Video_Y);
+                Graphics.Refresh();
             }
 
             Key.is_key_menu_enter = false;
         }
 
-        _ = sdl.SDL_UpdateWindowSurface(Graphics.screen);
+        Graphics.Refresh();
         sdl.SDL_Delay(16);
     }
 
@@ -348,9 +345,6 @@ fn GetKeyPress() u32 {
                 sdl.SDL_EVENT_KEY_DOWN => {
                     key = &event.key;
                     return key.key;
-                },
-                sdl.SDL_EVENT_WINDOW_RESIZED => {
-                    Graphics.surface = sdl.SDL_GetWindowSurface(Graphics.screen);
                 },
                 sdl.SDL_EVENT_QUIT => {
                     std.process.exit(0);

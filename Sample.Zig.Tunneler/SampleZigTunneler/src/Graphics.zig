@@ -24,8 +24,11 @@ const font8x8 = blk: {
     break :blk result;
 };
 
-pub var screen: *sdl.SDL_Window = undefined;
+pub var window: *sdl.SDL_Window = undefined;
+var _surface_window: *sdl.SDL_Surface = undefined;
+
 pub var surface: *sdl.SDL_Surface = undefined;
+pub var logical_surfaceOrNull: ?*sdl.SDL_Surface = null;
 pub var color: [256]u32 = undefined;
 
 pub const fs_modes = [5]sdl.SDL_Rect{
@@ -48,9 +51,37 @@ pub var Video_X: i32 = 800;
 pub var Video_Y: i32 = 600;
 
 pub fn Deinit_Video() void {
-    sdl.SDL_DestroySurface(surface);
-    sdl.SDL_DestroyWindow(screen);
+    if (logical_surfaceOrNull) |logical_surface| {
+        sdl.SDL_DestroySurface(logical_surface);
+    }
+    sdl.SDL_DestroyWindow(window);
     sdl.SDL_Quit();
+}
+
+pub fn Resize(w: i32, h: i32) void {
+    if (logical_surfaceOrNull != null) {
+        _ = sdl.SDL_FillSurfaceRect(_surface_window, null, color[0]);
+        _ = sdl.SDL_UpdateWindowSurface(window);
+        sdl.SDL_DestroySurface(logical_surfaceOrNull.?);
+    }
+
+    logical_surfaceOrNull = sdl.SDL_CreateSurface(w, h, sdl.SDL_PIXELFORMAT_RGBA32);
+    surface = logical_surfaceOrNull.?;
+    _surface_window = sdl.SDL_GetWindowSurface(window);
+}
+
+pub fn Refresh() void {
+    const window_w = _surface_window.*.w;
+    const window_h = _surface_window.*.h;
+
+    const rect: sdl.SDL_Rect = .{
+        .x = @divTrunc((window_w - Video_X), 2),
+        .y = @divTrunc((window_h - Video_Y), 2),
+        .w = Video_X,
+        .h = Video_Y,
+    };
+    _ = sdl.SDL_BlitSurfaceScaled(surface, null, _surface_window, &rect, sdl.SDL_SCALEMODE_LINEAR);
+    _ = sdl.SDL_UpdateWindowSurface(window);
 }
 
 pub fn Init_Video() bool {
@@ -61,14 +92,15 @@ pub fn Init_Video() bool {
 
     var buff: [64]u8 = undefined;
     const title = std.fmt.bufPrintZ(&buff, "Tunneler v.{s}", .{game.VERSION}) catch unreachable;
-    const screenOrNull = sdl.SDL_CreateWindow(title, Video_X, Video_Y, 0);
-    if (screenOrNull == null) {
+    const windowOrNull = sdl.SDL_CreateWindow(title, Video_X, Video_Y, 0);
+    if (windowOrNull == null) {
         printf("Couldn't set video mode {d}x{d}: {s}\n", .{ Video_X, Video_Y, sdl.SDL_GetError() });
         return false;
     }
 
-    screen = screenOrNull.?;
-    surface = sdl.SDL_GetWindowSurface(screen);
+    window = windowOrNull.?;
+    Resize(Video_X, Video_Y);
+
     // _ = sdl.SDL_WarpMouseGlobal(0, 0);
     // _ = sdl.SDL_HideCursor();
 
@@ -131,7 +163,7 @@ pub fn Init_Video() bool {
     color[69] = sdl.SDL_MapSurfaceRGB(surface, 0xaa, 0xaa, 0xaa);
 
     _ = sdl.SDL_FillSurfaceRect(surface, null, color[0]);
-    _ = sdl.SDL_UpdateWindowSurface(screen);
+    Refresh();
     return true;
 }
 

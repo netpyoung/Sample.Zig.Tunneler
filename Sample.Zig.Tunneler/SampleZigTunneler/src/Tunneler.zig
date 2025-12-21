@@ -10,7 +10,6 @@ const Ai = @import("Ai.zig");
 const Key = @import("Key.zig");
 
 const DrawBox = Graphics.DrawBox;
-const screen = Graphics.screen;
 const PutPixel = Graphics.PutPixel;
 const Time_Now = Timer.Time_Now;
 

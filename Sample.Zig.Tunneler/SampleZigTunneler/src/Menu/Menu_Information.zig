@@ -41,7 +41,7 @@ pub fn Do() void {
         const ty: usize = 8 + i * 8;
         Graphics.PutStr(8, ty, line, Graphics.color[12]);
     }
-    _ = sdl.SDL_UpdateWindowSurface(Graphics.screen);
+    Graphics.Refresh();
     sdl.SDL_Delay(16);
 
     Key.is_key_menu_enter = false;

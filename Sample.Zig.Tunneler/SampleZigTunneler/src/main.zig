@@ -58,7 +58,7 @@ pub fn main() void {
                 Menu.E_MAIN_MENU.Reset();
             }
         }
-        _ = sdl.SDL_UpdateWindowSurface(Graphics.screen);
+        Graphics.Refresh();
         sdl.SDL_Delay(16);
     }
 }

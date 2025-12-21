@@ -1,5 +1,4 @@
 const std = @import("std");
-//const builtin = @import("builtin");
 const HandleEvents = @import("Events.zig").HandleEvents;
 const sdl = @import("../sdl.zig").sdl;
 
@@ -22,7 +21,7 @@ fn Main_Game() void {
     _ = sdl.SDL_FillSurfaceRect(Graphics.surface, null, Graphics.color[0]);
 
     Tunneler.DrawFrames();
-    _ = sdl.SDL_UpdateWindowSurface(Graphics.screen);
+    Graphics.Refresh();
     Tunneler.DrawFrames();
 
     Terrain.Init_Field();
@@ -36,7 +35,7 @@ fn Main_Game() void {
         Tunneler.HandleActions(dt);
 
         Tunneler.Draw();
-        _ = sdl.SDL_UpdateWindowSurface(Graphics.screen);
+        Graphics.Refresh();
     }
 
     Key.is_key_quit = false;
@@ -67,7 +66,7 @@ fn Print_Field() void {
     }
 
     sdl.SDL_UnlockSurface(Graphics.surface);
-    _ = sdl.SDL_UpdateWindowSurface(Graphics.screen);
+    Graphics.Refresh();
     sdl.SDL_Delay(16);
 
     while (!Key.is_key_quit) {
@@ -98,7 +97,7 @@ fn Print_Stats() void {
     slice = std.fmt.bufPrint(&str, "Tank 2: {d}", .{Tunneler.Tank[0].deaths}) catch unreachable;
     Graphics.PutStr(25, 43, slice, Graphics.color[40]);
 
-    _ = sdl.SDL_UpdateWindowSurface(Graphics.screen);
+    Graphics.Refresh();
     sdl.SDL_Delay(16);
 
     Key.is_key_menu_enter = false;
