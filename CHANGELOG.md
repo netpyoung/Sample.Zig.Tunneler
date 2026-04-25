@@ -2,6 +2,16 @@
 
 <!-- release notes start -->
 
+## [v0.0.3]
+
+
+### Main
+
+#### Changed
+
+- use translate-c for zig 0.16
+
+
 ## [v0.0.2]
 
 

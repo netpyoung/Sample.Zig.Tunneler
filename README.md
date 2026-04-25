@@ -17,7 +17,7 @@
 - [zig](https://ziglang.org/)
   ``` cmd
   > zig version
-  0.15.2
+  0.16.0
   ```
 - Lib: [libsdl-org/SDL](https://github.com/libsdl-org/SDL)
 - IDE: [LuckystarStudio.ZigVS](https://marketplace.visualstudio.com/items?itemName=LuckystarStudio.ZigVS)

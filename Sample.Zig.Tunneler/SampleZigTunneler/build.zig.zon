@@ -1,7 +1,7 @@
 .{
     .name = .SampleZigTunneler,
     .fingerprint = 0x2839eff705d00931,
-    .version = "0.0.2",
+    .version = "0.0.3",
     .dependencies = .{},
     .paths = .{
         "build.zig",

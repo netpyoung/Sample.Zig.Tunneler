@@ -1,4 +1,4 @@
-pub const VERSION = "0.0.2";
+pub const VERSION = "0.0.3";
 
 pub const FIELD_SIZEX = 800;
 pub const FIELD_SIZEY = 600;
