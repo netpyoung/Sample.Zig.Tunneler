@@ -10,9 +10,11 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const exe = b.addExecutable(.{
-        .name = "SampleZigTunneler",
-        .root_module = root_module,
+    const translate_c = b.addTranslateC(.{
+        .root_source_file = b.path("src/c.h"),
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
     });
 
     { // setup SDL
@@ -22,13 +24,21 @@ pub fn build(b: *std.Build) void {
             .use_pkg_config = .no,
         };
         const sdl_path = b.path("../../SDL3/");
-        exe.addIncludePath(sdl_path.join(b.allocator, "include") catch unreachable);
-        exe.addLibraryPath(sdl_path.join(b.allocator, "lib/x64") catch unreachable);
+        translate_c.addIncludePath(sdl_path.join(b.allocator, "include") catch unreachable);
+        root_module.addLibraryPath(sdl_path.join(b.allocator, "lib/x64") catch unreachable);
         const bin = sdl_path.join(b.allocator, "lib/x64/SDL3.dll") catch unreachable;
         b.installBinFile(bin.src_path.sub_path, "SDL3.dll");
-        exe.root_module.linkSystemLibrary("SDL3", dynamic_link_opts);
-        exe.linkLibC();
+        root_module.linkSystemLibrary("SDL3", dynamic_link_opts);
     }
+    
+    const c_module = translate_c.createModule();
+    root_module.addImport("c", c_module);
+    root_module.link_libc = true;
+
+    const exe = b.addExecutable(.{
+        .name = "SampleZigTunneler",
+        .root_module = root_module,
+    });
 
     if (optimize != .Debug) {
         if (target.result.os.tag == .windows) {
