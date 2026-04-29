@@ -63,23 +63,6 @@ pub fn main() void {
     }
 }
 
-// ===========================
-var gpa_instance = std.heap.GeneralPurposeAllocator(.{
-    .thread_safe = true,
-    .never_unmap = true,
-    .retain_metadata = true,
-    .stack_trace_frames = 16,
-}){};
-
-fn Deinit() void {
-    if (builtin.mode == .Debug or builtin.mode == .ReleaseSafe) {
-        const leaked = gpa_instance.deinit();
-        if (leaked == .leak) {
-            std.debug.print("\nMemory leak detected!\n", .{});
-        }
-    }
-}
-
 fn ShowTitle() void {
     var buff: [64]u8 = undefined;
     const version = std.fmt.bufPrint(&buff, "Tunneler v.{s}", .{game.VERSION}) catch unreachable;
