@@ -1,4 +1,6 @@
-$u="https://github.com/libsdl-org/SDL/releases/download/release-3.2.28/SDL3-devel-3.2.28-VC.zip"
+$SDL3_version="3.4.4"
+
+$u="https://github.com/libsdl-org/SDL/releases/download/release-${SDL3_version}/SDL3-devel-${SDL3_version}-VC.zip"
 $z="$PWD\SDL3.zip"
 $d="$PWD\SDL3"
 
