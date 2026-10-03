@@ -30,7 +30,7 @@ pub fn build(b: *std.Build) void {
         b.installBinFile(bin.src_path.sub_path, "SDL3.dll");
         root_module.linkSystemLibrary("SDL3", dynamic_link_opts);
     }
-    
+
     const c_module = translate_c.createModule();
     root_module.addImport("c", c_module);
     root_module.link_libc = true;
@@ -40,10 +40,10 @@ pub fn build(b: *std.Build) void {
         .root_module = root_module,
     });
 
-    if (optimize != .Debug) {
+    if (optimize != .debug) {
         if (target.result.os.tag == .windows) {
             // hide console window
-            exe.subsystem = .Windows;
+            exe.subsystem = .windows;
             exe.entry = .{ .symbol_name = "mainCRTStartup" };
         }
 
@@ -55,9 +55,7 @@ pub fn build(b: *std.Build) void {
     const run_cmd = b.addRunArtifact(exe);
 
     run_cmd.step.dependOn(b.getInstallStep());
-    if (b.args) |args| {
-        run_cmd.addArgs(args);
-    }
+    run_cmd.addPassthruArgs();
 
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);

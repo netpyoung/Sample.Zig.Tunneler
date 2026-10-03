@@ -91,7 +91,7 @@ pub fn Init_Video() bool {
     }
 
     var buff: [64]u8 = undefined;
-    const title = std.fmt.bufPrintZ(&buff, "Tunneler v.{s}", .{game.VERSION}) catch unreachable;
+    const title = std.fmt.bufPrintSentinel(&buff, "Tunneler v.{s}", .{game.VERSION}, 0) catch unreachable;
     const windowOrNull = sdl.SDL_CreateWindow(title, Video_X, Video_Y, 0);
     if (windowOrNull == null) {
         printf("Couldn't set video mode {d}x{d}: {s}\n", .{ Video_X, Video_Y, sdl.SDL_GetError() });
