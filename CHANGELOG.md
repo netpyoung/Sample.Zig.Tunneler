@@ -2,6 +2,15 @@
 
 <!-- release notes start -->
 
+## [v0.0.4]
+
+
+### Main
+
+#### Changed
+
+- zig 0.16.0 => 0.17.0
+
 ## [v0.0.3]
 
 
